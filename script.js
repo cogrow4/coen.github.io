@@ -421,50 +421,244 @@ document.addEventListener('DOMContentLoaded', function() {
         animateBlob();
     }
 
-    // Text scramble effect
-    class TextScramble {
-        constructor(el) { this.el = el; this.chars = '!<>-_\/[]{}—=+*^?#________'; this.queue = []; this.frame = 0; this.frameRequest = null; this.update = this.update.bind(this); }
+    // Advanced Text scramble effect with physics
+    class AdvancedTextScramble {
+        constructor(el) { 
+            this.el = el; 
+            this.chars = '!<>-_\/[]{}—=+*^?#________ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'; 
+            this.queue = []; 
+            this.frame = 0; 
+            this.frameRequest = null; 
+            this.update = this.update.bind(this);
+            this.isAnimating = false;
+        }
+        
         setText(newText) {
+            if (this.isAnimating) return Promise.resolve();
+            this.isAnimating = true;
+            
             const oldText = this.el.innerText;
             const length = Math.max(oldText.length, newText.length);
             const promise = new Promise((resolve) => this.resolve = resolve);
             this.queue = [];
+            
             for (let i = 0; i < length; i++) {
                 const from = oldText[i] || '';
                 const to = newText[i] || '';
-                const start = Math.floor(Math.random() * 20);
-                const end = start + Math.floor(Math.random() * 20);
-                this.queue.push({ from, to, start, end, char: '' });
+                const start = Math.floor(Math.random() * 30) + 10;
+                const end = start + Math.floor(Math.random() * 30) + 20;
+                this.queue.push({ from, to, start, end, char: '', velocity: Math.random() * 0.5 + 0.1 });
             }
+            
             cancelAnimationFrame(this.frameRequest);
             this.frame = 0;
             this.update();
             return promise;
         }
+        
         update() {
             let output = '';
             let complete = 0;
+            
             for (let i = 0; i < this.queue.length; i++) {
-                let { from, to, start, end, char } = this.queue[i];
-                if (this.frame >= end) { complete++; output += to; }
-                else if (this.frame >= start) {
-                    if (!char || Math.random() < 0.28) { char = this.randomChar(); this.queue[i].char = char; }
-                    output += `<span class="dud">${char}</span>`;
-                } else { output += from; }
+                let { from, to, start, end, char, velocity } = this.queue[i];
+                
+                if (this.frame >= end) { 
+                    complete++; 
+                    output += to; 
+                } else if (this.frame >= start) {
+                    if (!char || Math.random() < velocity) { 
+                        char = this.randomChar(); 
+                        this.queue[i].char = char; 
+                    }
+                    output += `<span class="dud" style="color: ${this.getRandomColor()};">${char}</span>`;
+                } else { 
+                    output += from; 
+                }
             }
+            
             this.el.innerHTML = output;
-            if (complete === this.queue.length) { this.resolve(); }
-            else { this.frame++; this.frameRequest = requestAnimationFrame(this.update); }
+            
+            if (complete === this.queue.length) { 
+                this.isAnimating = false;
+                this.resolve(); 
+            } else { 
+                this.frame++; 
+                this.frameRequest = requestAnimationFrame(this.update); 
+            }
         }
-        randomChar() { return this.chars[Math.floor(Math.random() * this.chars.length)]; }
+        
+        randomChar() { 
+            return this.chars[Math.floor(Math.random() * this.chars.length)]; 
+        }
+        
+        getRandomColor() {
+            const colors = ['#6366f1', '#8b5cf6', '#f59e0b', '#10b981', '#ec4899'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
     }
 
-    document.querySelectorAll('.nav-link, .section-title').forEach(el => {
+    // Enhanced text scramble with magnetic effects
+    document.querySelectorAll('.nav-link, .section-title, .hero-title .title-line').forEach(el => {
         el.addEventListener('mouseenter', () => {
-            const scramble = new TextScramble(el);
+            const scramble = new AdvancedTextScramble(el);
             scramble.setText(el.textContent || '');
         });
     });
+
+    // Advanced magnetic field interactions
+    class MagneticField {
+        constructor() {
+            this.field = document.querySelector('.magnetic-field');
+            this.particles = [];
+            this.init();
+        }
+
+        init() {
+            // Create magnetic particles
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'magnetic-particle';
+                particle.style.cssText = `
+                    position: absolute;
+                    width: 2px;
+                    height: 2px;
+                    background: rgba(99, 102, 241, 0.6);
+                    border-radius: 50%;
+                    pointer-events: none;
+                    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+                `;
+                this.particles.push(particle);
+                document.body.appendChild(particle);
+            }
+
+            this.updatePositions();
+        }
+
+        updatePositions() {
+            const mouseX = window.mouseX || window.innerWidth / 2;
+            const mouseY = window.mouseY || window.innerHeight / 2;
+
+            this.particles.forEach((particle, index) => {
+                const angle = (index / this.particles.length) * Math.PI * 2;
+                const radius = 100 + Math.sin(Date.now() * 0.001 + index) * 30;
+                const x = mouseX + Math.cos(angle) * radius;
+                const y = mouseY + Math.sin(angle) * radius;
+
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                particle.style.opacity = 0.3 + Math.sin(Date.now() * 0.002 + index) * 0.3;
+            });
+
+            requestAnimationFrame(() => this.updatePositions());
+        }
+    }
+
+    // Initialize magnetic field
+    const magneticField = new MagneticField();
+
+    // Advanced particle trails
+    class ParticleTrails {
+        constructor() {
+            this.trails = [];
+            this.maxTrails = 100;
+            this.init();
+        }
+
+        init() {
+            document.addEventListener('mousemove', (e) => {
+                this.createTrail(e.clientX, e.clientY);
+            });
+        }
+
+        createTrail(x, y) {
+            if (this.trails.length >= this.maxTrails) {
+                const oldTrail = this.trails.shift();
+                if (oldTrail && oldTrail.parentNode) {
+                    oldTrail.parentNode.removeChild(oldTrail);
+                }
+            }
+
+            const trail = document.createElement('div');
+            trail.className = 'particle-trail';
+            trail.style.cssText = `
+                position: fixed;
+                width: 4px;
+                height: 4px;
+                background: radial-gradient(circle, rgba(99,102,241,0.8), transparent);
+                border-radius: 50%;
+                pointer-events: none;
+                left: ${x}px;
+                top: ${y}px;
+                z-index: 5;
+                animation: trailFade 1s ease-out forwards;
+            `;
+
+            document.body.appendChild(trail);
+            this.trails.push(trail);
+
+            // Remove after animation
+            setTimeout(() => {
+                if (trail.parentNode) {
+                    trail.parentNode.removeChild(trail);
+                }
+                const index = this.trails.indexOf(trail);
+                if (index > -1) {
+                    this.trails.splice(index, 1);
+                }
+            }, 1000);
+        }
+    }
+
+    // Add trail animation CSS
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes trailFade {
+            0% { 
+                opacity: 1; 
+                transform: scale(1); 
+            }
+            100% { 
+                opacity: 0; 
+                transform: scale(0.1); 
+            }
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Initialize particle trails
+    const particleTrails = new ParticleTrails();
+
+    // Advanced glass morphing effects
+    class GlassMorphing {
+        constructor() {
+            this.elements = document.querySelectorAll('.portfolio-item, .skill-category, .contact-method');
+            this.init();
+        }
+
+        init() {
+            this.elements.forEach(el => {
+                el.addEventListener('mouseenter', () => this.morphIn(el));
+                el.addEventListener('mouseleave', () => this.morphOut(el));
+            });
+        }
+
+        morphIn(el) {
+            el.style.transition = 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            el.style.transform = 'perspective(1000px) rotateX(5deg) rotateY(5deg) translateZ(20px)';
+            el.style.filter = 'blur(0px) brightness(1.1)';
+            el.style.boxShadow = '0 25px 50px rgba(99, 102, 241, 0.3)';
+        }
+
+        morphOut(el) {
+            el.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px)';
+            el.style.filter = 'blur(0px) brightness(1)';
+            el.style.boxShadow = 'var(--shadow-md)';
+        }
+    }
+
+    // Initialize glass morphing
+    const glassMorphing = new GlassMorphing();
 
     // Add scroll progress indicator
     function createScrollProgress() {
@@ -579,5 +773,139 @@ document.addEventListener('DOMContentLoaded', function() {
     // Uncomment to enable cursor trail (can be performance intensive)
     // createCursorTrail();
 
-    console.log('Portfolio website loaded successfully! 🚀');
+    // Performance monitoring and optimization
+    class PerformanceMonitor {
+        constructor() {
+            this.fps = 0;
+            this.frameCount = 0;
+            this.lastTime = performance.now();
+            this.isLowPerformance = false;
+            this.init();
+        }
+
+        init() {
+            this.monitorPerformance();
+            this.optimizeForDevice();
+        }
+
+        monitorPerformance() {
+            const currentTime = performance.now();
+            this.frameCount++;
+
+            if (currentTime - this.lastTime >= 1000) {
+                this.fps = Math.round((this.frameCount * 1000) / (currentTime - this.lastTime));
+                this.frameCount = 0;
+                this.lastTime = currentTime;
+
+                // Adjust quality based on performance
+                if (this.fps < 30) {
+                    this.isLowPerformance = true;
+                    this.reduceQuality();
+                } else if (this.fps > 50) {
+                    this.isLowPerformance = false;
+                    this.increaseQuality();
+                }
+            }
+
+            requestAnimationFrame(() => this.monitorPerformance());
+        }
+
+        optimizeForDevice() {
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const isLowEnd = navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4;
+            
+            if (isMobile || isLowEnd) {
+                this.isLowPerformance = true;
+                this.reduceQuality();
+            }
+        }
+
+        reduceQuality() {
+            // Reduce particle counts
+            if (window.advancedEffects) {
+                window.advancedEffects.physicsParticles = window.advancedEffects.physicsParticles.slice(0, 50);
+                window.advancedEffects.liquidParticles = window.advancedEffects.liquidParticles.slice(0, 30);
+            }
+            
+            // Disable some effects
+            document.body.classList.add('low-performance');
+        }
+
+        increaseQuality() {
+            document.body.classList.remove('low-performance');
+        }
+    }
+
+    // Initialize performance monitoring
+    const performanceMonitor = new PerformanceMonitor();
+
+    // Advanced intersection observer for performance
+    const lazyObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                // Start animations only when visible
+                if (entry.target.dataset.animate) {
+                    entry.target.style.animationPlayState = 'running';
+                }
+            } else {
+                // Pause animations when not visible
+                if (entry.target.dataset.animate) {
+                    entry.target.style.animationPlayState = 'paused';
+                }
+            }
+        });
+    }, { 
+        threshold: 0.1,
+        rootMargin: '50px'
+    });
+
+    // Observe all animated elements
+    document.querySelectorAll('.fade-in, [data-animate]').forEach(el => {
+        lazyObserver.observe(el);
+    });
+
+    // Advanced mouse tracking for all effects
+    let mouseX = 0, mouseY = 0;
+    document.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        window.mouseX = mouseX;
+        window.mouseY = mouseY;
+    });
+
+    // Preload critical resources
+    const preloadResources = () => {
+        const criticalImages = [
+            // Add any critical images here
+        ];
+        
+        criticalImages.forEach(src => {
+            const img = new Image();
+            img.src = src;
+        });
+    };
+
+    // Initialize preloading
+    preloadResources();
+
+    // Advanced error handling
+    window.addEventListener('error', (e) => {
+        console.warn('Performance issue detected:', e.error);
+        if (window.advancedEffects) {
+            window.advancedEffects.destroy();
+        }
+    });
+
+    // Memory cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+        if (window.advancedEffects) {
+            window.advancedEffects.destroy();
+        }
+        lazyObserver.disconnect();
+    });
+
+    console.log('🚀 Advanced Portfolio Website Loaded Successfully!');
+    console.log('✨ Features: Physics Simulation, Liquid Effects, WebGL, Advanced Animations');
+    console.log('🎯 Performance: Optimized for 60fps with adaptive quality');
 });

@@ -7,10 +7,18 @@
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
 </head>
 <body>
-    <!-- Background Effects -->
+    <!-- Advanced Background Effects -->
     <canvas id="starfield"></canvas>
+    <canvas id="physics-canvas"></canvas>
+    <canvas id="liquid-canvas"></canvas>
+    <div id="three-container"></div>
     <svg style="position:absolute;width:0;height:0" aria-hidden="true" focusable="false">
         <defs>
             <filter id="goo">
@@ -18,9 +26,16 @@
                 <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -10" result="goo" />
                 <feBlend in="SourceGraphic" in2="goo" />
             </filter>
+            <filter id="liquid">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur" />
+                <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 15 -8" result="liquid" />
+                <feBlend in="SourceGraphic" in2="liquid" />
+            </filter>
         </defs>
     </svg>
     <div class="cursor-blob"></div>
+    <div class="magnetic-field"></div>
+    <div class="particle-trails"></div>
     <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
@@ -80,9 +95,17 @@
                             <div class="image-placeholder">
                                 <i class="fas fa-user"></i>
                             </div>
+                            <div class="liquid-overlay"></div>
+                            <div class="glass-reflection"></div>
                         </div>
                         <div class="card-glow"></div>
+                        <div class="physics-particles"></div>
                     </div>
+                </div>
+                <div class="morphing-shapes">
+                    <div class="shape-morph shape-1"></div>
+                    <div class="shape-morph shape-2"></div>
+                    <div class="shape-morph shape-3"></div>
                 </div>
             </div>
         </div>
@@ -449,6 +472,7 @@
         </div>
     </footer>
 
+    <script src="advanced-effects.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
