@@ -17,6 +17,21 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 1000);
     });
 
+    // Theme handling
+    const body = document.body;
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
+        body.classList.add('theme-light');
+    }
+    const themeToggle = document.querySelector('.theme-toggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('theme-light');
+            const isLight = body.classList.contains('theme-light');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        });
+    }
+
     // Mobile Navigation
     const hamburger = document.querySelector('.hamburger');
     const navMenu = document.querySelector('.nav-menu');
@@ -59,10 +74,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         
         if (scrollTop > 100) {
-            navbar.style.background = 'rgba(255, 255, 255, 0.98)';
-            navbar.style.boxShadow = '0 2px 20px rgba(0, 0, 0, 0.1)';
+            if (body.classList.contains('theme-light')) {
+                navbar.style.background = 'rgba(255, 255, 255, 0.98)';
+            } else {
+                navbar.style.background = 'rgba(5, 7, 17, 0.85)';
+            }
+            navbar.style.boxShadow = '0 2px 20px rgba(0, 0, 0, 0.3)';
         } else {
-            navbar.style.background = 'rgba(255, 255, 255, 0.95)';
+            navbar.style.background = body.classList.contains('theme-light') ? 'rgba(255, 255, 255, 0.95)' : 'rgba(5, 7, 17, 0.6)';
             navbar.style.boxShadow = 'none';
         }
 
@@ -86,13 +105,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Parallax for floating shapes
         heroShapes.forEach((shape, index) => {
-            const speed = 0.5 + (index * 0.1);
-            shape.style.transform = `translateY(${scrolled * speed}px) rotate(${scrolled * 0.1}deg)`;
+            const speed = 0.2 + (index * 0.08);
+            shape.style.transform = `translateY(${scrolled * speed}px) rotate(${scrolled * 0.06}deg)`;
         });
 
         // Parallax for hero content
         if (heroContent) {
-            heroContent.style.transform = `translateY(${scrolled * 0.3}px)`;
+            heroContent.style.transform = `translateY(${scrolled * 0.18}px)`;
         }
 
         // 3D tilt effect for profile card
@@ -114,9 +133,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Move shapes based on mouse position
         heroShapes.forEach((shape, index) => {
-            const speed = (index + 1) * 0.5;
-            const x = (mouseX - 0.5) * speed * 20;
-            const y = (mouseY - 0.5) * speed * 20;
+            const speed = (index + 1) * 0.35;
+            const x = (mouseX - 0.5) * speed * 30;
+            const y = (mouseY - 0.5) * speed * 30;
             shape.style.transform += ` translate(${x}px, ${y}px)`;
         });
     });
@@ -302,40 +321,150 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Add some interactive particles
-    function createParticles() {
-        const particleContainer = document.createElement('div');
-        particleContainer.className = 'particles';
-        particleContainer.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
-        `;
-        
-        document.body.appendChild(particleContainer);
-        
-        for (let i = 0; i < 50; i++) {
-            const particle = document.createElement('div');
-            particle.style.cssText = `
-                position: absolute;
-                width: 2px;
-                height: 2px;
-                background: rgba(99, 102, 241, 0.5);
-                border-radius: 50%;
-                left: ${Math.random() * 100}%;
-                top: ${Math.random() * 100}%;
-                animation: float ${3 + Math.random() * 4}s ease-in-out infinite;
-                animation-delay: ${Math.random() * 2}s;
-            `;
-            particleContainer.appendChild(particle);
+    // Starfield canvas background
+    const canvas = document.getElementById('starfield');
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+        let stars = [];
+        const starCount = Math.min(250, Math.floor(width * height / 12000));
+        const maxSpeed = 0.35;
+        const mouse = { x: width / 2, y: height / 3 };
+
+        function createStars() {
+            stars = [];
+            for (let i = 0; i < starCount; i++) {
+                stars.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    z: Math.random() * 0.8 + 0.2,
+                    vx: (Math.random() - 0.5) * maxSpeed,
+                    vy: (Math.random() - 0.5) * maxSpeed,
+                    radius: Math.random() * 1.3 + 0.2
+                });
+            }
         }
+
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = body.classList.contains('theme-light') ? 'rgba(30,41,59,0.5)' : 'rgba(255,255,255,0.9)';
+            for (let i = 0; i < stars.length; i++) {
+                const s = stars[i];
+                const parallax = 1 + (mouse.x - width / 2) * 0.00008 * s.z;
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.radius * s.z, 0, Math.PI * 2);
+                ctx.globalAlpha = 0.5 + s.z * 0.5;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+
+                // Move
+                s.x += s.vx * parallax;
+                s.y += s.vy * parallax;
+
+                // Wrap
+                if (s.x < 0) s.x = width; if (s.x > width) s.x = 0;
+                if (s.y < 0) s.y = height; if (s.y > height) s.y = 0;
+            }
+
+            // Constellation lines
+            ctx.strokeStyle = body.classList.contains('theme-light') ? 'rgba(99,102,241,0.25)' : 'rgba(99,102,241,0.15)';
+            for (let i = 0; i < stars.length; i++) {
+                for (let j = i + 1; j < i + 12 && j < stars.length; j++) {
+                    const a = stars[i], b = stars[j];
+                    const dx = a.x - b.x, dy = a.y - b.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 90) {
+                        ctx.globalAlpha = 1 - dist / 90;
+                        ctx.beginPath();
+                        ctx.moveTo(a.x, a.y);
+                        ctx.lineTo(b.x, b.y);
+                        ctx.stroke();
+                        ctx.globalAlpha = 1;
+                    }
+                }
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            createStars();
+        });
+        document.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+        createStars();
+        draw();
     }
 
-    // Initialize particles
-    createParticles();
+    // Cursor blob
+    const cursorBlob = document.querySelector('.cursor-blob');
+    if (cursorBlob) {
+        let targetX = window.innerWidth / 2;
+        let targetY = window.innerHeight / 2;
+        let currentX = targetX;
+        let currentY = targetY;
+        const ease = 0.12;
+
+        document.addEventListener('mousemove', (e) => {
+            targetX = e.clientX;
+            targetY = e.clientY;
+        });
+        function animateBlob() {
+            currentX += (targetX - currentX) * ease;
+            currentY += (targetY - currentY) * ease;
+            cursorBlob.style.left = currentX + 'px';
+            cursorBlob.style.top = currentY + 'px';
+            requestAnimationFrame(animateBlob);
+        }
+        animateBlob();
+    }
+
+    // Text scramble effect
+    class TextScramble {
+        constructor(el) { this.el = el; this.chars = '!<>-_\/[]{}—=+*^?#________'; this.queue = []; this.frame = 0; this.frameRequest = null; this.update = this.update.bind(this); }
+        setText(newText) {
+            const oldText = this.el.innerText;
+            const length = Math.max(oldText.length, newText.length);
+            const promise = new Promise((resolve) => this.resolve = resolve);
+            this.queue = [];
+            for (let i = 0; i < length; i++) {
+                const from = oldText[i] || '';
+                const to = newText[i] || '';
+                const start = Math.floor(Math.random() * 20);
+                const end = start + Math.floor(Math.random() * 20);
+                this.queue.push({ from, to, start, end, char: '' });
+            }
+            cancelAnimationFrame(this.frameRequest);
+            this.frame = 0;
+            this.update();
+            return promise;
+        }
+        update() {
+            let output = '';
+            let complete = 0;
+            for (let i = 0; i < this.queue.length; i++) {
+                let { from, to, start, end, char } = this.queue[i];
+                if (this.frame >= end) { complete++; output += to; }
+                else if (this.frame >= start) {
+                    if (!char || Math.random() < 0.28) { char = this.randomChar(); this.queue[i].char = char; }
+                    output += `<span class="dud">${char}</span>`;
+                } else { output += from; }
+            }
+            this.el.innerHTML = output;
+            if (complete === this.queue.length) { this.resolve(); }
+            else { this.frame++; this.frameRequest = requestAnimationFrame(this.update); }
+        }
+        randomChar() { return this.chars[Math.floor(Math.random() * this.chars.length)]; }
+    }
+
+    document.querySelectorAll('.nav-link, .section-title').forEach(el => {
+        el.addEventListener('mouseenter', () => {
+            const scramble = new TextScramble(el);
+            scramble.setText(el.textContent || '');
+        });
+    });
 
     // Add scroll progress indicator
     function createScrollProgress() {
