@@ -1017,7 +1017,7 @@ section {
 }
 
 /* Advanced Background Effects */
-#starfield, #physics-canvas, #liquid-canvas {
+#starfield, #physics-canvas, #liquid-canvas, #grid-canvas {
     position: fixed;
     top: 0;
     left: 0;
@@ -1033,6 +1033,10 @@ section {
 
 #liquid-canvas {
     z-index: 2;
+}
+
+#grid-canvas {
+    z-index: 3;
 }
 
 #three-container {

@@ -827,12 +827,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.advancedEffects.liquidParticles = window.advancedEffects.liquidParticles.slice(0, 30);
             }
             
+            // Reduce grid complexity
+            if (window.interactiveGrid) {
+                window.interactiveGrid.setGridSize(60);
+                window.interactiveGrid.setGridOpacity(0.2);
+                window.interactiveGrid.setDistortionStrength(30);
+                window.interactiveGrid.setWaveAmplitude(10);
+            }
+            
             // Disable some effects
             document.body.classList.add('low-performance');
         }
 
         increaseQuality() {
             document.body.classList.remove('low-performance');
+            
+            // Restore grid quality
+            if (window.interactiveGrid) {
+                window.interactiveGrid.setGridSize(40);
+                window.interactiveGrid.setGridOpacity(0.3);
+                window.interactiveGrid.setDistortionStrength(50);
+                window.interactiveGrid.setWaveAmplitude(20);
+            }
         }
     }
 
@@ -901,6 +917,9 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('beforeunload', () => {
         if (window.advancedEffects) {
             window.advancedEffects.destroy();
+        }
+        if (window.interactiveGrid) {
+            window.interactiveGrid.destroy();
         }
         lazyObserver.disconnect();
     });
