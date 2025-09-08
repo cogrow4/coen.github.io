@@ -9,6 +9,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+    <!-- Background Effects -->
+    <canvas id="starfield"></canvas>
+    <svg style="position:absolute;width:0;height:0" aria-hidden="true" focusable="false">
+        <defs>
+            <filter id="goo">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+                <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -10" result="goo" />
+                <feBlend in="SourceGraphic" in2="goo" />
+            </filter>
+        </defs>
+    </svg>
+    <div class="cursor-blob"></div>
     <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
@@ -22,6 +34,10 @@
                 <li><a href="#skills" class="nav-link">Skills</a></li>
                 <li><a href="#contact" class="nav-link">Contact</a></li>
             </ul>
+            <button class="theme-toggle" aria-label="Toggle theme">
+                <span class="theme-icon sun"><i class="fas fa-sun"></i></span>
+                <span class="theme-icon moon"><i class="fas fa-moon"></i></span>
+            </button>
             <div class="hamburger">
                 <span class="bar"></span>
                 <span class="bar"></span>
